@@ -1,0 +1,70 @@
+<?php
+
+if (!defined('BASEPATH'))
+	die('No direct script access allowed');
+
+/*
+| -------------------------------------------------------------------
+| DATABASE CONNECTIVITY SETTINGS
+| -------------------------------------------------------------------
+| This file will contain the settings needed to access your database.
+|
+| For complete instructions please consult the 'Database Connection'
+| page of the User Guide.
+|
+| -------------------------------------------------------------------
+| EXPLANATION OF VARIABLES
+| -------------------------------------------------------------------
+|
+|    'connectionString' Hostname, database, port and database type for
+|     the connection. Driver example: mysql. Currently supported:
+|                 mysql, pgsql, mssql, sqlite, oci
+|    'username' The username used to connect to the database
+|    'password' The password used to connect to the database
+|    'tablePrefix' You can add an optional prefix, which will be added
+|                 to the table name when using the Active Record class
+|
+*/
+
+return [
+
+	'name' => '{{ LIMESURVEY_NAME | default('LimeSurvey') }}',
+
+	'components' => [
+		'db' => [
+			'connectionString' => {% if DB_TYPE is defined and DB_TYPE == "pgsql" %}'pgsql:host={{ DB_HOST }};port={{ DB_PORT | default(5432) }};user={{ DB_USER }};password={{ DB_PASS }};dbname={{ DB_NAME | default( DB_USER ) }};'{% else %}'mysql:host={{ DB_HOST }};port={{ DB_PORT | default(3306) }};dbname={{ DB_NAME | default( DB_USER ) }};'{% endif %},
+			'emulatePrepare' => true,
+			'username' => '{{ DB_USER }}',
+			'password' => '{{ DB_PASS }}',
+			'charset' => '{% if DB_TYPE is defined and DB_TYPE == "pgsql" %}utf8{% else %}utf8mb4{% endif %}',
+			'tablePrefix' => '{{ DB_PREFIX | default('lime_') }}',
+		],
+
+		'urlManager' => [
+			'urlFormat' => 'path',
+			'rules' => [],
+			'showScriptName' => {{ LIMESURVEY_SHOW_SCRIPT_NAME | default(false) }},
+		],
+
+	],
+
+	// For security issue : it's better to set runtimePath out of web access
+	// Directory must be readable and writable by the webuser
+	'runtimePath' => '{{ RUNTIMEFOLDER }}',
+
+	// Use the following config variable to set modified optional settings copied from config-defaults.php
+	'config' => [
+
+		// debug: Set this to 1 if you are looking for errors. If you still get no errors after enabling this
+		// then please check your error-logs - either in your hosting provider admin panel or in some /logs directory
+		// on your webspace.
+
+		// LimeSurvey developers: Set this to 2 to additionally display STRICT PHP error messages and get full access to standard templates
+		'debug' => {{ LIMESURVEY_DEBUG | default(0) }},
+		'debugsql' => {{ LIMESURVEY_SQL_DEBUG | default(0) }}, // Set this to 1 to enanble sql logging, only active when debug = 2
+
+		// Update default LimeSurvey config here
+	]
+];
+
+/* End of file config.php */

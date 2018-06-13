@@ -1,0 +1,105 @@
+{# 
+	{
+		"key": "userprefix",
+		"value": "\"" ~ LDAP_USER_PREFIX | default('') ~ "\""
+	},
+	{
+		"key": "domainsuffix",
+		"value": "\"" ~ LDAP_USER_SUFFIX | default('') ~ "\""
+	},
+#}
+
+{% set data = [
+	{
+		"key": "server",
+		"value": "\"" ~ LDAP_SERVER ~ "\""
+	},
+	{
+		"key": "ldapport",
+		"value": "\"" ~ LDAP_PORT | default(389) ~ "\""
+	},
+	{
+		"key": "ldapversion",
+		"value": "\"" ~ LDAP_VERSION | default(3) ~ "\""
+	},
+	{
+		"key": "ldapoptreferrals",
+		"value": "\"0\""
+	},
+	{
+		"key": "ldaptls",
+		"value": "\"" ~ LDAP_TLS | default(0) ~ "\""
+	},
+	{
+		"key": "ldapmode",
+		"value": "\"searchandbind\""
+	},
+	{
+		"key": "userprefix",
+		"value": "null"
+	},
+	{
+		"key": "domainsuffix",
+		"value": "null"
+	},
+	{
+		"key": "searchuserattribute",
+		"value": "\"" ~ LDAP_SEARCH_USER_ATTRIBUTE | default('uid') ~ "\""
+	},
+	{
+		"key": "usersearchbase",
+		"value": "\"" ~ LDAP_USER_SEARCH_BASE | default('ou=people,dc=example,dc=com') ~ "\""
+	},
+	{
+		"key": "extrauserfilter",
+		"value": "\"\""
+	},
+	{
+		"key": "binddn",
+		"value": "\"" ~ LDAP_BIND_DN | default('cn=admin,dc=example,dc=com') ~ "\""
+	},
+	{
+		"key": "bindpwd",
+		"value": "\"" ~ LDAP_BIND_PASS ~ "\""
+	},
+	{
+		"key": "mailattribute",
+		"value": "\"" ~ LDAP_MAIL_ATTRIBUTE | default('mail') ~ "\""
+	},
+	{
+		"key": "fullnameattribute",
+		"value": "\"" ~ LDAP_FULLNAME_ATTRIBUTE | default('displayName') ~ "\""
+	},
+	{
+		"key": "is_default",
+		"value": "\"" ~ LDAP_IS_DEFAULT | default(1) ~ "\""
+	},
+	{
+		"key": "autocreate",
+		"value": "\"" ~ LDAP_AUTOCREATE | default(1) ~ "\""
+	},
+	{
+		"key": "automaticsurveycreation",
+		"value": "\"" ~ LDAP_ALLOW_CREATION_TO_LOGGEDIN | default('') ~ "\""
+	},
+	{
+		"key": "groupsearchbase",
+		"value": "\"" ~ LDAP_GROUP_SEARCH_BASE | default('ou=groups,dc=example,dc=com') ~ "\""
+	},
+	{
+		"key": "groupsearchfilter",
+		"value": "\"(&(cn=" ~ LDAP_GROUP_NAME | default('limesurvey') ~ ")(member=$userdn))\""
+	},
+	{
+		"key": "allowInitialUser",
+		"value": "\"\""
+	}
+] %}
+
+{% for item in data %}DELETE FROM `{{ DB_PREFIX }}plugin_settings` WHERE `plugin_id` = {{ LDAP_PLUGIN_ID }} AND `key` = '{{ item['key'] }}';
+{% endfor %}
+
+INSERT INTO `{{ DB_PREFIX }}plugin_settings` (`plugin_id`, `key`, `value`)
+VALUES
+{% for item in data %}
+	({{ LDAP_PLUGIN_ID }}, '{{ item['key'] }}', '{{ item['value'] }}'){% if loop.last %};{% else %},{% endif %}{% endfor %}
