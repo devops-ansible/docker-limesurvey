@@ -1,14 +1,3 @@
-{# 
-	{
-		"key": "userprefix",
-		"value": "\"" ~ LDAP_USER_PREFIX | default('') ~ "\""
-	},
-	{
-		"key": "domainsuffix",
-		"value": "\"" ~ LDAP_USER_SUFFIX | default('') ~ "\""
-	},
-#}
-
 {% set data = [
 	{
 		"key": "server",
@@ -45,6 +34,14 @@
 	{
 		"key": "searchuserattribute",
 		"value": "\"" ~ LDAP_SEARCH_USER_ATTRIBUTE | default('uid') ~ "\""
+	},
+	{
+		"key": "userprefix",
+		"value": "\"" ~ LDAP_USER_PREFIX | default('') ~ "\""
+	},
+	{
+		"key": "domainsuffix",
+		"value": "\"" ~ LDAP_USER_SUFFIX | default('') ~ "\""
 	},
 	{
 		"key": "usersearchbase",
