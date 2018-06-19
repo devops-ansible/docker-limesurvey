@@ -26,7 +26,7 @@ if (!defined('BASEPATH'))
 |
 */
 
-return [
+$config =  [
 
 	'name' => '{{ LIMESURVEY_NAME | default('LimeSurvey') }}',
 
@@ -66,5 +66,10 @@ return [
 		// Update default LimeSurvey config here
 	]
 ];
+
+{% if DEFAULT_TEMPLATE is defined and DEFAULT_TEMPLATE != "" %}$config['config']['defaulttheme'] = '{{ DEFAULT_TEMPLATE }}';
+{% endif %}
+
+return $config;
 
 /* End of file config.php */
