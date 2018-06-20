@@ -6,6 +6,12 @@ if [ ! -d "$RUNTIMEFOLDER" ]; then
     chown -R "$WORKINGUSER" "$RUNTIMEFOLDER"
 fi
 
+abort=false
+if [ -f application/config/config.php ]; then
+    # do not proceed if already installed
+    abort=true
+fi
+
 # set default values for non-mandatory variables that are not only used in Jinja2 environment
 if [ -z ${DB_NAME+x} ]; then DB_NAME="$DB_USER"; export DB_NAME; fi
 if [ -z ${DB_PREFIX+x} ]; then DB_PREFIX="lime_"; export DB_PREFIX; fi
@@ -14,7 +20,7 @@ if [ -z ${DB_PREFIX+x} ]; then DB_PREFIX="lime_"; export DB_PREFIX; fi
 j2 /templates/limesurvey_config.php.j2 > application/config/config.php
 
 # check if LimeSurvey already has a config file – and so would already be installed
-if [ -f application/config/config.php ]; then
+if [ "$abort" = true ]; then
     # do not proceed if already installed
     exit 0;
 fi
