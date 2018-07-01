@@ -1,5 +1,9 @@
 # LimeSurvey – Extension of Apache Base Image
 
+## TLDR
+
+docker run --rm -d -P --network internal -e DB_HOST=database -e DB_NAME=database -e DB_USER=user -e DB_PASS=password -e LIMESURVEY_ADMIN='adminuser' -e LIMESURVEY_ADMIN_PASS='password' -e LIMESURVEY_ADMIN_NAME='Name of Admin' -e LIMESURVEY_ADMIN_MAIL='admin@example.tld' -e LIMESURVEY_SHOW_SCRIPT_NAME=true macwinnie/limesurvey:latest
+
 Base-usage is to provide a as far as possible customizable Apache Webserver for (almost) every PHP-Application.
 
 Within this Repository you only find the Dockerfile and the pipeline configuration to build the image.
