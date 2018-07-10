@@ -95,3 +95,21 @@ if [ ! -z ${LIMESURVEY_TITLE+x} ]; then
     fi
 
 fi
+
+if [ ! -z ${LIMESURVEY_DEFAULT_LANG+x} ]; then
+
+    # the query to determine the ldap plugin id is used a few times
+    LIMESURVEY_DEFAULT_LANG_VAL_SQL="SELECT \`stg_value\` FROM \`${DB_PREFIX}settings_global\` WHERE \`stg_name\` = 'defaultlang';"
+    LIMESURVEY_DEFAULT_LANG_VAL=$(mysqlrequest "$LIMESURVEY_DEFAULT_LANG_VAL_SQL")
+
+    # the mysql command returns a string with an empty line if no result is found
+    # or a string with `id` in the first and the found value in the second line else
+    if [ $(echo "${LIMESURVEY_DEFAULT_LANG_VAL}" | wc -l) -gt 1 ]; then
+        # if Admin theme is already present just update it
+        mysqlrequest "UPDATE \`${DB_PREFIX}settings_global\` SET  \`stg_value\` = '${LIMESURVEY_DEFAULT_LANG}' WHERE \`stg_name\` = 'defaultlang';"
+    else
+        # activate given Admin theme
+        mysqlrequest "INSERT INTO \`${DB_PREFIX}settings_global\` (\`stg_name\`, \`stg_value\`) VALUES ('defaultlang', '${LIMESURVEY_DEFAULT_LANG}');"
+    fi
+
+fi
