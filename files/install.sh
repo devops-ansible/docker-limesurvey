@@ -7,9 +7,9 @@ if [ ! -d "$RUNTIMEFOLDER" ]; then
 fi
 
 abort=false
-if [ -f application/config/config.php ]; then
+if [ ! -f application/config/config.php ]; then
     # do not proceed if already installed
-    abort=true
+    install="true"
 fi
 
 # set default values for non-mandatory variables that are not only used in Jinja2 environment
@@ -19,21 +19,19 @@ if [ -z ${DB_PREFIX+x} ]; then DB_PREFIX="lime_"; export DB_PREFIX; fi
 # provision and write out config file
 j2 /templates/limesurvey_config.php.j2 > application/config/config.php
 
-# check if LimeSurvey already has a config file – and so would already be installed
-if [ "$abort" = true ]; then
-    # do not proceed if already installed
-    exit 0;
-fi
-
-# install LimeSurvey with provided admin user data
-cd application/commands
-php console.php install "$LIMESURVEY_ADMIN" "$LIMESURVEY_ADMIN_PASS" "$LIMESURVEY_ADMIN_NAME" "$LIMESURVEY_ADMIN_MAIL"
-
 # since all mysql requests have a big part in common, this function improves the readability
 mysqlrequest () {
     # echo "$1" >> /tmp/sql.log # helper file for debugging
     mysql -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASS" -D"$DB_NAME" -e "$1"
 }
+
+# check if LimeSurvey already has a config file – and so would already be installed
+if [ "$install" == "true" ]; then
+    # install LimeSurvey with provided admin user data
+    cd application/commands
+    php console.php install "$LIMESURVEY_ADMIN" "$LIMESURVEY_ADMIN_PASS" "$LIMESURVEY_ADMIN_NAME" "$LIMESURVEY_ADMIN_MAIL"
+
+fi
 
 # do LDAP-things if configured by environmental variables
 if [ ! -z ${LDAP_SERVER+x} ]; then
