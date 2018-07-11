@@ -113,3 +113,21 @@ if [ ! -z ${LIMESURVEY_DEFAULT_LANG+x} ]; then
     fi
 
 fi
+
+if [ ! -z ${DEFAULT_TEMPLATE+x} ]; then
+
+    # the query to determine the ldap plugin id is used a few times
+    ADMIN_THEME_VAL_SQL="SELECT \`stg_value\` FROM \`${DB_PREFIX}settings_global\` WHERE \`stg_name\` = 'defaulttheme';"
+    ADMIN_THEME_VAL=$(mysqlrequest "$ADMIN_THEME_VAL_SQL")
+
+    # the mysql command returns a string with an empty line if no result is found
+    # or a string with `id` in the first and the found value in the second line else
+    if [ $(echo "${ADMIN_THEME_VAL}" | wc -l) -gt 1 ]; then
+        # if Admin theme is already present just update it
+        mysqlrequest "UPDATE \`${DB_PREFIX}settings_global\` SET  \`stg_value\` = '${DEFAULT_TEMPLATE}' WHERE \`stg_name\` = 'defaulttheme';"
+    else
+        # activate given Admin theme
+        mysqlrequest "INSERT INTO \`${DB_PREFIX}settings_global\` (\`stg_name\`, \`stg_value\`) VALUES ('defaulttheme', '${DEFAULT_TEMPLATE}');"
+    fi
+
+fi

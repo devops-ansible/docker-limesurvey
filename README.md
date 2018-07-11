@@ -1,37 +1,85 @@
 # LimeSurvey – Extension of Apache Base Image
 
-## TLDR
-
-docker run --rm -d -P --network internal -e DB_HOST=database -e DB_NAME=database -e DB_USER=user -e DB_PASS=password -e LIMESURVEY_ADMIN='adminuser' -e LIMESURVEY_ADMIN_PASS='password' -e LIMESURVEY_ADMIN_NAME='Name of Admin' -e LIMESURVEY_ADMIN_MAIL='admin@example.tld' -e LIMESURVEY_SHOW_SCRIPT_NAME=true macwinnie/limesurvey:latest
-
-Base-usage is to provide a as far as possible customizable Apache Webserver for (almost) every PHP-Application.
-
-Within this Repository you only find the Dockerfile and the pipeline configuration to build the image.
+The LimeSurvey Image is based on our [base Apache with current PHP version 7.2](https://hub.docker.com/r/macwinnie/apache/).
 
 ## How to get this container run
+
+Minimal usage is to provide at least mandatory environmental variables from next chapter – so base usage can look like this [given that there is a Docker container `databasecontainer` within the Docker network `internal` and the given user credentials]:
+
+```sh
+docker run \
+   --rm -d -P \
+   --network internal \
+   -e DB_HOST=databasecontainer \
+   -e DB_NAME=database \
+   -e DB_USER=user \
+   -e DB_PASS=password \
+   -e LIMESURVEY_ADMIN=admin \
+   -e LIMESURVEY_ADMIN_PASS='$uper-secur3' \
+   -e LIMESURVEY_ADMIN_NAME=Admin \
+   -e LIMESURVEY_ADMIN_MAIL='admin@example.net' \
+   -e LIMESURVEY_SHOW_SCRIPT_NAME=true \
+   macwinnie/limesurvey:latest
+```
 
 ## Environmental Variables
 
 This image is customizable by these environmental variables:
 
-| env                   | default               | change recommended | description |
-| --------------------- | --------------------- |:------------------:| ----------- |
-| **PHP_TIMEZONE**      | *"Europe/Berlin"*     | yes                | timezone-file to use as default – can be one value selected out of `/usr/share/zoneinfo/`, i.e. `<region>/<city>` |
-| **APACHE\_WORKDIR**   | */var/www/html*       | yes                | home folder of apache web application |
-| **APACHE\_LOG\_DIR**  | */var/log/apache2*    | yes                | folder for log files of apache |
-| **APACHE\_PUBLIC\_DIR** | **$APACHE\_WORKDIR** | yes               | folder used within apache configuration to be published – can be usefull if i.e. subfolder `public` of webproject should be exposed |
-| **PHP_XDEBUG**        | *0*                   | yes                | You can use this to enable xdebug. start-apache2 script will enable xdebug if **PHP_XDEBUG** is set to *1* |
-| **YESWWW**            | false                 | yes                | Duplicate content has to be avoided – therefore a decision for containers delivering content of `www.domain.tld` and `domain.tld` has to be made which one should be the mainly used one. **YESWWW** will be overridden by **NOWWW** if both are true. |
-| **NOWWW**             | false                 | yes                | See **YESWWW** |
-| **HTTPS**             | true                  | yes                | relevant for **YESWWW** and **NOWWW** since config rules have to be adjusted. |
-| **SMTP\_HOST**        |  | yes                | should be set to your smtp host, i.e. `mail.example.com` |
-| **SMTP\_PORT**        |  | yes                | defaults to `587` |
-| **SMTP\_FROM**        |  | yes                | should be set to your sending from address, i.e. `motiontool@example.com` |
-| **SMTP\_USER**        |  | yes                | defaults to `SMTP_FROM` and has to be the user, you are authenticating on the **SMTP_HOST** |
-| **SMTP\_PASS**        |  | yes                | should be set to your plaintext(!) smtp password, i.e. `I'am very Secr3t!` |
-| **WORKINGUSER**       | *www-data*            | no                 | user that works as apache user – not implemented changable |
-| **TERM**              | *xterm*               | no                 | set terminal type – default *xterm* provides 16 colors |
-| **DEBIAN\_FRONTEND**  | *noninteractive*      | no                 | set frontent to use – default self-explaining  |
+| env                   | default               | mandatory | change recommended | description | comment |
+| --------------------- | --------------------- |:---------:|:------------------:| ----------- | --- |
+| **RUNTIMEFOLDER** | */var/www/limesurvey* | no | no | folder LimeSurvey puts the runtime files like sessions in |  |
+| **DB\_USER** | | yes | yes | database user | |
+| **DB\_PASS** | | yes | yes | password for database user **$DB\_USER** | |
+| **DB\_NAME** | **$DB\_USER** | no | yes | database the user **$DB\_USER** will work on for LimeSurvey | |
+| **DB_HOST** | | yes | yes | host of database **$DB\_NAME** | |
+| **DB\_PREFIX** | *"lime\_"* | no | no | prefix for all LimeSurvey-Tables within database | |
+| **LIMESURVEY\_ADMIN** | | yes | yes | username for LimeSurvey super admin | |
+| **LIMESURVEY\_ADMIN\_PASS** | | yes | yes | password for super admin **$LIMESURVEY\_ADMIN** | |
+| **LIMESURVEY\_ADMIN\_NAME** | | yes | yes | real name for super admin **$LIMESURVEY\_ADMIN** | |
+| **LIMESURVEY_ADMIN\_MAIL** | | yes | yes | e-mail address for super admin **$LIMESURVEY\_ADMIN** | |
+| **LIMESURVEY\_DEFAULT\_LANG** | | no | yes | abbreviation of default language to use | LimeSurvey defaults to `en` |
+| **LIMESURVEY\_TITLE** | | no | yes | Title of LimeSurvey instance | defaults to `LimeSurvey` |
+| **ADMIN\_THEME\_NAME** | | no | yes | theme name for admin theme to be activated | |
+| **DEFAULT\_TEMPLATE** | | no | yes | theme name for survey theme | has to be installed through the admin interface before it can be activated through this setting since there are done complex parsing steps during installation of a theme |
+| **LDAP\_SERVER** | | no | yes | ldap server | mandatory for activating ldap configuration; every LDAP variable without default has to be defined – else installation will fail |
+| **LDAP\_PORT** | 389 | no | yes | port for ldap connection | |
+| **LDAP\_VERSION** | 3 | no | no | ldap version to use | |
+| **LDAP\_TLS** | 0 | no | | 0 or 1 – whether TLS should not or should be activated | |
+| **LDAP\_SEARCH\_USER\_ATTRIBUTE** | *uid* | no | | search attribute for users | |
+| **LDAP\_USER\_PREFIX** | '' | no | | set userprefix for ldap binds | |
+| **LDAP\_USER\_SUFFIX** | '' | no | | set usersuffix for ldap binds | |
+| **LDAP\_USER\_SEARCH\_BASE** | *ou=people,dc=example,dc=com* | no | yes | ldap search base | |
+| **LDAP\_BIND\_DN** | *cn=admin,dc=example,dc=com* | no | yes | ldap user / authority to check binds | |
+| **LDAP\_BIND\_PASS** | | no | yes | password for ldap user / authority **$LDAP\_BIND\_DN** | |
+| **LDAP\_MAIL\_ATTRIBUTE** | *mail* | no | | ldap attribute for logged in users to be fetched as `mail` attribute to LimeSurvey | |
+| **LDAP\_FULLNAME\_ATTRIBUTE** | *displayName* | no | | ldap attribute interpreted as `fullname` for logged in users in LimeSurvey | |
+| **LDAP\_IS\_DEFAULT** | 1 | no | yes | 1 or 0 – whether ldap login should or not be default login method | |
+| **LDAP\_AUTOCREATE** | 1 | no | yes | 1 or 0 – whether login through ldap should create LimeSurvey user | |
+| **LDAP\_ALLOW\_CREATION\_TO\_LOGGEDIN** | '' | no | yes | | |
+| **LDAP\_GROUP\_SEARCH\_BASE** | *ou=groups,dc=example,dc=com* | no | yes | in which searchbase LimeSurvey should search for groups? | |
+| **LDAP\_GROUP\_NAME** | *limesurvey* | no | yes | group name an user should belong to for a successful login to LimeSurvey | |
+
+From Apache image it got these environmental variables for further usage:
+
+| env                   | default               | mandatory | change recommended | description | comment |
+| --------------------- | --------------------- |:---------:|:------------------:| ----------- | --- |
+| **PHP_TIMEZONE**      | *"Europe/Berlin"*     | no | yes                | timezone-file to use as default – can be one value selected out of `/usr/share/zoneinfo/`, i.e. `<region>/<city>` |  |
+| **APACHE\_WORKDIR**   | */var/www/html*       | no | no                | home folder of apache web application | installation directory for auto installation of LimeSurvey during build process of the image |
+| **APACHE\_LOG\_DIR**  | */var/log/apache2*    | no | yes                | folder for log files of apache |  |
+| **APACHE\_PUBLIC\_DIR** | **$APACHE\_WORKDIR** | no | yes               | folder used within apache configuration to be published – can be usefull if i.e. subfolder `public` of webproject should be exposed |  |
+| **PHP_XDEBUG**        | *0*                   | no | yes                | You can use this to enable xdebug. start-apache2 script will enable xdebug if **PHP_XDEBUG** is set to *1* |  |
+| **YESWWW**            | false                 | no | yes                | Duplicate content has to be avoided – therefore a decision for containers delivering content of `www.domain.tld` and `domain.tld` has to be made which one should be the mainly used one. **YESWWW** will be overridden by **NOWWW** if both are true. |  |
+| **NOWWW**             | false                 | no | yes                | See **YESWWW** |  |
+| **HTTPS**             | true                  | no | yes                | relevant for **YESWWW** and **NOWWW** since config rules have to be adjusted. |  |
+| **SMTP\_HOST**        |                       | no | yes                |  | should be set to your smtp host, i.e. `mail.example.com` |  |
+| **SMTP\_PORT**        |                       | no | yes                |  | defaults to `587` |  |
+| **SMTP\_FROM**        |                       | no | yes                |  | should be set to your sending from address, i.e. `motiontool@example.com` |  |
+| **SMTP\_USER**        |                       | no | yes                |  | defaults to `SMTP_FROM` and has to be the user, you are authenticating on the **SMTP_HOST** |  |
+| **SMTP\_PASS**        |                       | no | yes                |  | should be set to your plaintext(!) smtp password, i.e. `I'am very Secr3t!` |  |
+| **WORKINGUSER**       | *www-data*            | no | no                 | user that works as apache user – not implemented changable |  |
+| **TERM**              | *xterm*               | no | no                 | set terminal type – default *xterm* provides 16 colors |  |
+| **DEBIAN\_FRONTEND**  | *noninteractive*      | no | no                 | set frontent to use – default self-explaining  |  |
 
 
 ## Installed Tools
