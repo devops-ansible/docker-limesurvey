@@ -1,6 +1,6 @@
 # LimeSurvey – Extension of Apache Base Image
 
-The LimeSurvey Image is based on our [base Apache with current PHP version 7.2](https://hub.docker.com/r/macwinnie/apache/).
+The LimeSurvey Image is based on our [base Apache with current latest PHP version](https://hub.docker.com/r/macwinnie/apache/).
 
 ## How to get this container run
 
