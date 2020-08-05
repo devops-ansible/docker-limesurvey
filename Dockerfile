@@ -11,7 +11,8 @@ ARG LIMESURVEY_DL_URL="https://download.limesurvey.org/lts-releases/limesurvey3.
 
 RUN  wget "${LIMESURVEY_DL_URL}" -O /tmp/limesurvey.zip
 RUN unzip /tmp/limesurvey.zip -d /tmp/ 
-RUN mv /tmp/limesurvey "${APACHE_WORKDIR}"
+RUN mv /tmp/limesurvey /tmp/html && \
+    mv /tmp/html $APACHE_WORKDIR/..
 RUN rm -rf /tmp/*
 
 COPY files/templates/* /templates/
