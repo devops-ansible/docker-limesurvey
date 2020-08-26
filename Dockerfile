@@ -4,12 +4,12 @@ ARG DOCKER_VERSION=latest
 
 FROM ${DOCKER_REPO}/${DOCKER_IMG}:${DOCKER_VERSION}
 MAINTAINER macwinnie <dev@macwinnie.me>
+MAINTAINER Felix Kazuya <dev@felixkazuya.de>
 
 ENV RUNTIMEFOLDER="/var/www/limesurvey"
 
-ARG LIMESURVEY_DL_URL="https://download.limesurvey.org/lts-releases/limesurvey3.22.210+200804.zip"
+RUN wget $( curl -L https://community.limesurvey.org/downloads/ | sed -n "s/.*'\(.*lts.*\.zip\)'.*/\1/p" ) -O /tmp/limesurvey.zip 
 
-RUN  wget "${LIMESURVEY_DL_URL}" -O /tmp/limesurvey.zip
 RUN unzip /tmp/limesurvey.zip -d /tmp/ 
 RUN mv /tmp/limesurvey /tmp/html && \
     mv /tmp/html "${APACHE_WORKDIR}/.."
