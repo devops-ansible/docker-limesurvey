@@ -1,6 +1,6 @@
 # LimeSurvey – Extension of Apache Base Image
 
-The LimeSurvey Image is based on our [base Apache with current latest PHP version](https://hub.docker.com/r/macwinnie/apache/).
+The LimeSurvey Image is based on our [base Apache with current latest PHP version](https://hub.docker.com/r/devopsansiblede/apache/).
 
 ## How to get this container run
 
@@ -19,7 +19,7 @@ docker run \
    -e LIMESURVEY_ADMIN_NAME=Admin \
    -e LIMESURVEY_ADMIN_MAIL='admin@example.net' \
    -e LIMESURVEY_SHOW_SCRIPT_NAME=true \
-   macwinnie/limesurvey:latest
+   devopsansiblede/limesurvey:latest
 ```
 
 ## Environmental Variables
@@ -69,7 +69,7 @@ From Apache image it got these environmental variables for further usage:
 | **APACHE\_LOG\_DIR**  | */var/log/apache2*    | no | yes                | folder for log files of apache |  |
 | **APACHE\_PUBLIC\_DIR** | **$APACHE\_WORKDIR** | no | yes               | folder used within apache configuration to be published – can be usefull if i.e. subfolder `public` of webproject should be exposed |  |
 | **PHP_XDEBUG**        | *0*                   | no | yes                | You can use this to enable xdebug. start-apache2 script will enable xdebug if **PHP_XDEBUG** is set to *1* |  |
-| **YESWWW**            | false                 | no | yes                | Duplicate content has to be avoided – therefore a decision for containers delivering content of `www.domain.tld` and `domain.tld` has to be made which one should be the mainly used one. **YESWWW** will be overridden by **NOWWW** if both are true. |  |
+| **YESWWW**            | false                 | no | yes                | Duplicate content has to be avoided – therefore a decision for containers delivering content of `www.domain.tld` and `domain.tld` has to be made which one should be the mainly used one. **YESWWW** will be overridden by **NOWWW** if both are true. |  |
 | **NOWWW**             | false                 | no | yes                | See **YESWWW** |  |
 | **HTTPS**             | true                  | no | yes                | relevant for **YESWWW** and **NOWWW** since config rules have to be adjusted. |  |
 | **SMTP\_HOST**        |                       | no | yes                |  | should be set to your smtp host, i.e. `mail.example.com` |  |
@@ -91,14 +91,14 @@ From Apache image it got these environmental variables for further usage:
 | **python-jinja2**, **j2cli** | used for template provisioning |
 | **python-yaml**, **python-paramiko** | provision Image for further provisioning via Ansible | **vim**, **nano**            | editors |
 | **python-httplib2**            | Small, fast HTTP client library for Python |
-| **python-keyczar**             | Toolkit for safe and simple cryptography |
+| **python-keyczar**             | Toolkit for safe and simple cryptography |
 | **htop**, **tree**, **tmux**, **screen**, **sudo**, **git**, **zsh**, **ssh**, **screen** | usefull ops tools – oh-my-zsh is installed further|
 | **supervisor**               | process manager that allows to manage long-running programs |
 | **gnupg**, **openssl**       | encryption tools |
-| **curl**, **wget**           | fetch remote content |
+| **curl**, **wget**           | fetch remote content |
 | **mysql-client**, **libpq-dev**, **postgresql-client**, **sqlite3**, **libsqlite3-dev** | install database things – except of SQLite3 no real database is installed since full databases should run at least on a separate container |
 | **libkrb5-dev**, **libc-client-dev** | devtools especially for email |
-| **zlib1g-dev**               | compression library |
+| **zlib1g-dev**               | compression library |
 | **libfreetype6-dev**, **libjpeg62-turbo-dev**, **libmcrypt-dev**, **libpng-dev** | simplify working with and on images |
 | **nodejs**                   | javascript development tools |
 | **composer**                 | php package manager |
