@@ -8,17 +8,9 @@ MAINTAINER Felix Kazuya <dev@felixkazuya.de>
 
 ENV RUNTIMEFOLDER="/var/www/limesurvey"
 
-RUN wget $( curl -L https://community.limesurvey.org/downloads/ | sed -n "s/.*'\(.*lts.*\.zip\)'.*/\1/p" ) -O /tmp/limesurvey.zip 
-
-RUN unzip /tmp/limesurvey.zip -d /tmp/ 
-RUN mv /tmp/limesurvey /tmp/html && \
-    mv /tmp/html "${APACHE_WORKDIR}/.."
-RUN rm -rf /tmp/*
-
-COPY files/templates/* /templates/
-COPY files/install.sh /boot.d/
-
-RUN update-ca-certificates
+COPY files /docker_install
+RUN  chmod a+x /docker_install/install.sh && \
+     /docker_install/install.sh
 
 # run on every (re)start of container
 ENTRYPOINT ["entrypoint"]
