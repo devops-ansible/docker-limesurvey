@@ -4,7 +4,8 @@ wget $(curl -L https://community.limesurvey.org/downloads/ | sed -n "s/.*'\(.*lt
 
 unzip /tmp/limesurvey.zip -d /tmp/
 
-mv  /tmp/limesurvey  "${APACHE_WORKDIR}"
+mv  /tmp/limesurvey  /tmp/html
+mv  /tmp/html        "${APACHE_WORKDIR}"/..
 rm  -rf  /tmp/*
 
 mv  /docker_install/templates/*             /templates/
