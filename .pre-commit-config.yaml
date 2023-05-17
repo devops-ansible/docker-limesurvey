@@ -1,0 +1,41 @@
+---
+
+repos:
+
+  - repo: local
+    hooks:
+      - id: update-pre-commit
+        # Keep pre-commits up to date:
+        # Will BREAK commit when versions did change.
+        # Then the commit has to be re-initiated.
+        name: update all pre-commit hooks to latest
+        language: system
+        entry: pre-commit
+        args:
+          - autoupdate
+        always_run: true
+        pass_filenames: false
+        fail_fast: true
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.9.0
+    hooks:
+      - id: shellcheck
+        # Optionally only show errors and warnings
+        # args: ["--severity=warning"]
+
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: 2.7.1
+    hooks:
+      - id: editorconfig-checker
+        exclude: |
+          (?x)(
+            ^roles/frr/templates/frr.conf
+          )
+
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.31.0
+    hooks:
+      - id: yamllint
+
+...
