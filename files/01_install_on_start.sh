@@ -9,7 +9,11 @@ fi
 abort=false
 if [ ! -f application/config/config.php ]; then
     # do not proceed if already installed
+    echo "Installation will be performed"
     install="true"
+    if [ ! -d application/config ]; then
+        mkdir application/config
+    fi
 fi
 
 # set default values for non-mandatory variables that are not only used in Jinja2 environment
