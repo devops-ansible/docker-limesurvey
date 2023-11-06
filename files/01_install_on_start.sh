@@ -1,5 +1,8 @@
 #!/bin/bash
 
+curDir="$( pwd )"
+cd "${APACHE_WORKDIR}"
+
 # create runtime folder that should not be accessible on the frontend
 if [ ! -d "$RUNTIMEFOLDER" ]; then
     mkdir "$RUNTIMEFOLDER"
@@ -11,9 +14,6 @@ if [ ! -f application/config/config.php ]; then
     # do not proceed if already installed
     echo "Installation will be performed"
     install="true"
-    if [ ! -d application/config ]; then
-        mkdir application/config
-    fi
 fi
 
 # set default values for non-mandatory variables that are not only used in Jinja2 environment
@@ -135,3 +135,5 @@ if [ ! -z ${DEFAULT_TEMPLATE+x} ]; then
     fi
 
 fi
+
+cd "${curDir}"
