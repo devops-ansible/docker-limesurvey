@@ -11,7 +11,7 @@ mv  /tmp/html        "${APACHE_WORKDIR}"/..
 rm  -rf  /tmp/*
 
 mv  /docker_install/templates/*             /templates/
-mv  /docker_install/01_install_on_start.sh  /boot.d/
+mv  /docker_install/10_install_on_start.sh  /boot.d/
 rm  -rf  /docker_install
 
 chown -R www-data:www-data "${APACHE_WORKDIR}"
