@@ -2,7 +2,7 @@
 
 set -eu -o pipefail
 
-wget "$( curl -L https://community.limesurvey.org/downloads/ | sed -n "s/.*'\(.*lts.*\.zip\)'.*/\1/pI" )" -O /tmp/limesurvey.zip
+wget "$( curl -L https://community.limesurvey.org/downloads/ | sed -n "s/.*'\(.*latest-master.*\.zip\)'.*/\1/pI" )" -O /tmp/limesurvey.zip
 
 unzip /tmp/limesurvey.zip -d /tmp/
 
