@@ -67,6 +67,11 @@ $config =  [
 	]
 ];
 
+{% if LIMESURVEY_ADVANCED_JSON is defined and LIMESURVEY_ADVANCED_JSON != "" %}
+$json_config = json_decode( '{{ LIMESURVEY_ADVANCED_JSON | replace( { "'": "\\'" } ) | raw }}', true );
+$config = array_replace_recursive($config, $json_config);
+{% endif %}
+
 {% if DEFAULT_TEMPLATE is defined and DEFAULT_TEMPLATE != "" %}$config['config']['defaulttheme'] = '{{ DEFAULT_TEMPLATE }}';
 {% endif %}
 
