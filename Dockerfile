@@ -4,7 +4,6 @@ ARG DOCKER_VERSION=latest
 
 FROM ${DOCKER_REPO}/${DOCKER_IMG}:${DOCKER_VERSION}
 MAINTAINER macwinnie <dev@macwinnie.me>
-MAINTAINER Felix Kazuya <dev@felixkazuya.de>
 
 ENV RUNTIMEFOLDER="/var/www/limesurvey"
 

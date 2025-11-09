@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 curDir="$( pwd )"
 cd "${APACHE_WORKDIR}"
 
 # create runtime folder that should not be accessible on the frontend
-if [ ! -d "$RUNTIMEFOLDER" ]; then
-    mkdir "$RUNTIMEFOLDER"
-    chown -R "$WORKINGUSER" "$RUNTIMEFOLDER"
+if [ ! -d "${RUNTIMEFOLDER}" ]; then
+    mkdir "${RUNTIMEFOLDER}"
+    chown -R "${WORKINGUSER}" "${RUNTIMEFOLDER}"
 fi
 
 abort=false
@@ -26,15 +26,30 @@ j2 /templates/limesurvey_config.php.j2 > application/config/config.php
 # since all mysql requests have a big part in common, this function improves the readability
 mysqlrequest () {
     # echo "$1" >> /tmp/sql.log # helper file for debugging
-    mysql -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASS" -D"$DB_NAME" -e "$1"
+    mysql -h"${DB_HOST}" -u"${DB_USER}" -p"${DB_PASS}" -D"${DB_NAME}" -e "$1"
 }
+
+if [ ! -z ${LIMESURVEY_ENCRYPTIONNONCE+x} ] && [ ! -z ${LIMESURVEY_ENCRYPTIONSECRETBOXKEY+x} ]; then
+    cat <<EOF > ${APACHE_WORKDIR}/application/config/security.php
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+/* 
+WARNING!!!
+ONCE SET, ENCRYPTION KEYS SHOULD NEVER BE CHANGED, OTHERWISE ALL ENCRYPTED DATA COULD BE LOST !!!
+
+*/
+
+\$config = array();
+\$config['encryptionnonce'] = '${LIMESURVEY_ENCRYPTIONNONCE}';
+\$config['encryptionsecretboxkey'] = '${LIMESURVEY_ENCRYPTIONSECRETBOXKEY}';
+return \$config;
+EOF
+fi
 
 # check if LimeSurvey already has a config file – and so would already be installed
 if [ "$install" == "true" ]; then
     # install LimeSurvey with provided admin user data
     cd application/commands
-    php console.php install "$LIMESURVEY_ADMIN" "$LIMESURVEY_ADMIN_PASS" "$LIMESURVEY_ADMIN_NAME" "$LIMESURVEY_ADMIN_MAIL"
-
+    php console.php install "${LIMESURVEY_ADMIN}" "${LIMESURVEY_ADMIN_PASS}" "${LIMESURVEY_ADMIN_NAME}" "${LIMESURVEY_ADMIN_MAIL}"
 fi
 
 # do LDAP-things if configured by environmental variables
@@ -42,7 +57,7 @@ if [ ! -z ${LDAP_SERVER+x} ]; then
 
     # the query to determine the ldap plugin id is used a few times
     LDAP_PLUGIN_ID_SQL="SELECT \`id\` FROM \`${DB_PREFIX}plugins\` WHERE \`name\` = 'AuthLDAP';"
-    LDAP_PLUGIN_ID=$(mysqlrequest "$LDAP_PLUGIN_ID_SQL")
+    LDAP_PLUGIN_ID=$(mysqlrequest "${LDAP_PLUGIN_ID_SQL}")
 
     # the mysql command returns a string with an empty line if no result is found
     # or a string with `id` in the first and the found value in the second line else
@@ -52,15 +67,15 @@ if [ ! -z ${LDAP_SERVER+x} ]; then
     else
         # insert the plugin, activate it and reinvestigate the plugin id
         mysqlrequest "INSERT INTO \`${DB_PREFIX}plugins\` (\`name\`, \`active\`) VALUES ('AuthLDAP', 1);"
-        LDAP_PLUGIN_ID=$(mysqlrequest "$LDAP_PLUGIN_ID_SQL")
+        LDAP_PLUGIN_ID=$(mysqlrequest "${LDAP_PLUGIN_ID_SQL}")
     fi
     # only the integer id is usefull further ... so remove the first useless line
-    LDAP_PLUGIN_ID=$(echo "$LDAP_PLUGIN_ID" | sed -n 2p)
+    LDAP_PLUGIN_ID=$(echo "${LDAP_PLUGIN_ID}" | sed -n 2p)
     export LDAP_PLUGIN_ID
 
     # provision SQL script that configures LDAP and push it to the database
     j2 /templates/limesurvey_ldap.sql.j2 > /tmp/limesurvey_ldap.sql
-    mysql -h"$DB_HOST" -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" < /tmp/limesurvey_ldap.sql
+    mysql -h"${DB_HOST}" -u"${DB_USER}" -p"${DB_PASS}" "${DB_NAME}" < /tmp/limesurvey_ldap.sql
 
 fi
 
@@ -68,7 +83,7 @@ if [ ! -z ${ADMIN_THEME_NAME+x} ]; then
 
     # the query to determine the ldap plugin id is used a few times
     ADMIN_THEME_VAL_SQL="SELECT \`stg_value\` FROM \`${DB_PREFIX}settings_global\` WHERE \`stg_name\` = 'admintheme';"
-    ADMIN_THEME_VAL=$(mysqlrequest "$ADMIN_THEME_VAL_SQL")
+    ADMIN_THEME_VAL=$(mysqlrequest "${ADMIN_THEME_VAL_SQL}")
 
     # the mysql command returns a string with an empty line if no result is found
     # or a string with `id` in the first and the found value in the second line else
@@ -86,15 +101,15 @@ if [ ! -z ${LIMESURVEY_TITLE+x} ]; then
 
     # the query to determine the ldap plugin id is used a few times
     LIMESURVEY_TITLE_VAL_SQL="SELECT \`stg_value\` FROM \`${DB_PREFIX}settings_global\` WHERE \`stg_name\` = 'sitename';"
-    LIMESURVEY_TITLE_VAL=$(mysqlrequest "$LIMESURVEY_TITLE_VAL_SQL")
+    LIMESURVEY_TITLE_VAL=$(mysqlrequest "${LIMESURVEY_TITLE_VAL_SQL}")
 
     # the mysql command returns a string with an empty line if no result is found
     # or a string with `id` in the first and the found value in the second line else
     if [ $(echo "${LIMESURVEY_TITLE_VAL}" | wc -l) -gt 1 ]; then
-        # if Admin theme is already present just update it
+        # if title is already present just update it
         mysqlrequest "UPDATE \`${DB_PREFIX}settings_global\` SET  \`stg_value\` = '${LIMESURVEY_TITLE}' WHERE \`stg_name\` = 'sitename';"
     else
-        # activate given Admin theme
+        # activate given title
         mysqlrequest "INSERT INTO \`${DB_PREFIX}settings_global\` (\`stg_name\`, \`stg_value\`) VALUES ('sitename', '${LIMESURVEY_TITLE}');"
     fi
 
@@ -104,15 +119,15 @@ if [ ! -z ${LIMESURVEY_DEFAULT_LANG+x} ]; then
 
     # the query to determine the ldap plugin id is used a few times
     LIMESURVEY_DEFAULT_LANG_VAL_SQL="SELECT \`stg_value\` FROM \`${DB_PREFIX}settings_global\` WHERE \`stg_name\` = 'defaultlang';"
-    LIMESURVEY_DEFAULT_LANG_VAL=$(mysqlrequest "$LIMESURVEY_DEFAULT_LANG_VAL_SQL")
+    LIMESURVEY_DEFAULT_LANG_VAL=$(mysqlrequest "${LIMESURVEY_DEFAULT_LANG_VAL_SQL}")
 
     # the mysql command returns a string with an empty line if no result is found
     # or a string with `id` in the first and the found value in the second line else
     if [ $(echo "${LIMESURVEY_DEFAULT_LANG_VAL}" | wc -l) -gt 1 ]; then
-        # if Admin theme is already present just update it
+        # if default lng is already present just update it
         mysqlrequest "UPDATE \`${DB_PREFIX}settings_global\` SET  \`stg_value\` = '${LIMESURVEY_DEFAULT_LANG}' WHERE \`stg_name\` = 'defaultlang';"
     else
-        # activate given Admin theme
+        # activate default lng
         mysqlrequest "INSERT INTO \`${DB_PREFIX}settings_global\` (\`stg_name\`, \`stg_value\`) VALUES ('defaultlang', '${LIMESURVEY_DEFAULT_LANG}');"
     fi
 
@@ -121,13 +136,13 @@ fi
 if [ ! -z ${DEFAULT_TEMPLATE+x} ]; then
 
     # the query to determine the ldap plugin id is used a few times
-    ADMIN_THEME_VAL_SQL="SELECT \`stg_value\` FROM \`${DB_PREFIX}settings_global\` WHERE \`stg_name\` = 'defaulttheme';"
-    ADMIN_THEME_VAL=$(mysqlrequest "$ADMIN_THEME_VAL_SQL")
+    THEME_VAL_SQL="SELECT \`stg_value\` FROM \`${DB_PREFIX}settings_global\` WHERE \`stg_name\` = 'defaulttheme';"
+    THEME_VAL=$(mysqlrequest "${THEME_VAL_SQL}")
 
     # the mysql command returns a string with an empty line if no result is found
     # or a string with `id` in the first and the found value in the second line else
-    if [ $(echo "${ADMIN_THEME_VAL}" | wc -l) -gt 1 ]; then
-        # if Admin theme is already present just update it
+    if [ $(echo "${THEME_VAL}" | wc -l) -gt 1 ]; then
+        # if theme is already present just update it
         mysqlrequest "UPDATE \`${DB_PREFIX}settings_global\` SET  \`stg_value\` = '${DEFAULT_TEMPLATE}' WHERE \`stg_name\` = 'defaulttheme';"
     else
         # activate given Admin theme
