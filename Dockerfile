@@ -3,7 +3,7 @@ ARG DOCKER_IMG=apache
 ARG DOCKER_VERSION=latest
 
 FROM ${DOCKER_REPO}/${DOCKER_IMG}:${DOCKER_VERSION}
-MAINTAINER macwinnie <dev@macwinnie.me>
+LABEL org.opencontainers.image.authors="macwinnie <dev@macwinnie.me>"
 
 ENV RUNTIMEFOLDER="/var/www/limesurvey"
 
