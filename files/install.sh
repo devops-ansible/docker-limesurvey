@@ -57,6 +57,25 @@ patch_limesurvey() {
         echo "ERROR: Unexpected showToolsMenu structure" >&2
         return 1
     fi
+
+    
+    # Fix 3: preg_match() must not receive null
+    file="${APACHE_WORKDIR}/application/helpers/expressions/em_core_helper.php"
+    old='return preg_match($pattern . '\''u'\'', $input);'
+    new='return $input === null ? false : preg_match($pattern . '\''u'\'', $input);'
+
+    if grep -Fq "$new" "$file"; then
+        echo "SKIP: regexMatch null handling already fixed"
+    elif grep -Fq "$old" "$file"; then
+        sed -i \
+            "s/return preg_match(\\\$pattern \\. 'u', \\\$input);/return \\\$input === null ? false : preg_match(\\\$pattern . 'u', \\\$input);/" \
+            "$file"
+        grep -Fq "$new" "$file" || return 1
+        echo "PATCHED: regexMatch null handling"
+    else
+        echo "ERROR: Unexpected em_core_helper.php structure" >&2
+        return 1
+    fi
 }
 
 patch_limesurvey
