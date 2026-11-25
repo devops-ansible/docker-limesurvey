@@ -41,41 +41,6 @@ patch_limesurvey() {
         echo "ERROR: Unexpected QuestionGroup.php structure" >&2
         return 1
     fi
-
-    # Fix 2: Undefined showToolsMenu
-    file="${APACHE_WORKDIR}/application/views/questionAdministration/partial/topbarBtns/editQuestionTopbarLeft_view.php"
-    old='if ($showToolsMenu)'
-    new='if ($showToolsMenu ?? false)'
-
-    if grep -Fq "$new" "$file"; then
-        echo "SKIP: showToolsMenu already fixed"
-    elif grep -Fq "$old" "$file"; then
-        sed -i 's/if (\$showToolsMenu)/if ($showToolsMenu ?? false)/' "$file"
-        grep -Fq "$new" "$file" || return 1
-        echo "PATCHED: showToolsMenu"
-    else
-        echo "ERROR: Unexpected showToolsMenu structure" >&2
-        return 1
-    fi
-
-    
-    # Fix 3: preg_match() must not receive null
-    file="${APACHE_WORKDIR}/application/helpers/expressions/em_core_helper.php"
-    old='return preg_match($pattern . '\''u'\'', $input);'
-    new='return $input === null ? false : preg_match($pattern . '\''u'\'', $input);'
-
-    if grep -Fq "$new" "$file"; then
-        echo "SKIP: regexMatch null handling already fixed"
-    elif grep -Fq "$old" "$file"; then
-        sed -i \
-            "s/return preg_match(\\\$pattern \\. 'u', \\\$input);/return \\\$input === null ? false : preg_match(\\\$pattern . 'u', \\\$input);/" \
-            "$file"
-        grep -Fq "$new" "$file" || return 1
-        echo "PATCHED: regexMatch null handling"
-    else
-        echo "ERROR: Unexpected em_core_helper.php structure" >&2
-        return 1
-    fi
 }
 
 patch_limesurvey
